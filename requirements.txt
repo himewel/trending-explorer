@@ -1,0 +1,2 @@
+pyspark==3.2.0
+tweepy==4.4.0
