@@ -1,0 +1,46 @@
+x-airflow-common: &airflow-common
+    - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+    - AIRFLOW__CORE__LOAD_EXAMPLES=FALSE
+    - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@airflow-postgres:5432/airflow
+    - AIRFLOW__WEBSERVER__EXPOSE_CONFIG=TRUE
+    - AIRFLOW__WEBSERVER__SECRET_KEY=SECRET
+
+services:
+    airflow-webserver:
+        build: .
+        command: ./scripts/start-webserver.sh
+        depends_on:
+            - airflow-postgres
+        environment: *airflow-common
+        healthcheck:
+            test: curl -f localhost:8080 || exit 1
+            timeout: 90s
+        ports:
+            - 8080:8080
+        volumes:
+            - ./airflow/dags:/opt/airflow/dags
+            - ./airflow/include:/opt/airflow/include
+
+    airflow-scheduler:
+        build: .
+        command: ./scripts/start-scheduler.sh
+        depends_on:
+            - airflow-webserver
+        environment: *airflow-common
+        healthcheck:
+            test: nc -z localhost 8793
+            timeout: 90s
+        volumes:
+            - ./airflow/dags:/opt/airflow/dags
+            - ./airflow/include:/opt/airflow/include
+
+    airflow-postgres:
+        environment:
+            POSTGRES_USER: airflow
+            POSTGRES_PASSWORD: airflow
+            POSTGRES_DB: airflow
+        healthcheck:
+            test: pg_isready -U postgres
+        image: postgres:13-alpine
+
+version: '3.8'
