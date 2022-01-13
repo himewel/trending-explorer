@@ -12,6 +12,7 @@ services:
         depends_on:
             - airflow-postgres
         environment: *airflow-common
+        env_file: .env
         healthcheck:
             test: curl -f localhost:8080 || exit 1
             timeout: 90s
@@ -20,6 +21,7 @@ services:
         volumes:
             - ./airflow/dags:/opt/airflow/dags
             - ./airflow/include:/opt/airflow/include
+            - ./data:/data
 
     airflow-scheduler:
         build: .
@@ -27,12 +29,14 @@ services:
         depends_on:
             - airflow-webserver
         environment: *airflow-common
+        env_file: .env
         healthcheck:
             test: nc -z localhost 8793
             timeout: 90s
         volumes:
             - ./airflow/dags:/opt/airflow/dags
             - ./airflow/include:/opt/airflow/include
+            - ./data:/data
 
     airflow-postgres:
         environment:
