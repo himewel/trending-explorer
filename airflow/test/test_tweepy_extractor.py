@@ -9,7 +9,7 @@ from include import TweepyExtractor
 
 class TestTweepyExtractor(unittest.TestCase):
     def setUp(self):
-        self.tmp_path = ".tmp/landing"
+        self.tmp_path = ".tmp/extraction/landing"
         os.makedirs(self.tmp_path, exist_ok=True)
         self.extractor = TweepyExtractor(path=self.tmp_path)
 
