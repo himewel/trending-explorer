@@ -42,9 +42,9 @@ class TweetRelease:
         return raw_df
 
     def merge(self, raw_df):
-        trusted_df = DeltaTable.forPath(self.spark, self.trusted_df)
+        trusted_df = DeltaTable.forPath(self.spark, self.trusted_path)
         _ = (
-            raw_df.alias("raw")
+            trusted_df.alias("trusted")
             .merge(
                 source=raw_df.alias("raw"),
                 condition=col("trusted.id") == col("raw.id"),
