@@ -45,8 +45,10 @@ class TweepyExtractor:
             if isinstance(value, datetime):
                 watermark[key] = value.isoformat()
 
+        new_list = []
         for tweet in tweet_list:
             tweet["watermark"] = watermark
+            new_list.append(tweet)
         return tweet_list
 
     def save_file(self, data, execution_date):

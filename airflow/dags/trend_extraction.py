@@ -3,7 +3,7 @@ from datetime import datetime
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 
-from include import TweepyExtractor
+from include import TweepyExtractor, TweetIngestion
 
 _LANDING_PATH = "/data/landing"
 _RAW_PATH = "/data/raw"
@@ -27,5 +27,13 @@ with DAG(
     extraction_task = PythonOperator(
         task_id="tweet_extraction",
         python_callable=extractor.fetch,
-        op_kwargs={"topic": "#covid19", "max_results": 50},
+        op_kwargs={"topic": "#covid19", "max_results": 10},
     )
+
+    ingestion = TweetIngestion(landing_path=_LANDING_PATH, raw_path=_RAW_PATH)
+    ingestion_task = PythonOperator(
+        task_id="tweet_ingestion",
+        python_callable=ingestion.evaluate,
+    )
+
+    extraction_task >> ingestion_task
