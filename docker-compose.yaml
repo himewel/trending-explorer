@@ -21,6 +21,7 @@ services:
         volumes:
             - ./airflow/dags:/opt/airflow/dags
             - ./airflow/include:/opt/airflow/include
+            - ./airflow/test:/opt/airflow/test
             - ./data:/data
 
     airflow-scheduler:
@@ -36,6 +37,7 @@ services:
         volumes:
             - ./airflow/dags:/opt/airflow/dags
             - ./airflow/include:/opt/airflow/include
+            - ./airflow/test:/opt/airflow/test
             - ./data:/data
 
     airflow-postgres:

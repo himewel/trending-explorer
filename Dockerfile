@@ -7,7 +7,7 @@ ENV JAVA_HOME "/usr/lib/jvm/java-8-openjdk-amd64"
 ENV SPARK_HOME "/opt/spark"
 ENV PATH "${PATH}:${JAVA_HOME}/bin"
 ENV PATH "${PATH}:${SPARK_HOME}/bin:${SPARK_HOME}/sbin"
-ENV PYTHONPATH "${PYTHONPATH}:${AIRFLOW_HOME}/include"
+ENV PYTHONPATH "${PYTHONPATH}:${AIRFLOW_HOME}"
 
 USER root
 
