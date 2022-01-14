@@ -66,10 +66,10 @@ class TweetIngestion:
         )
         return schema
 
-    def get_landing(self, spark, landing_file, data_interval_start):
+    def get_landing(self, landing_file, data_interval_start):
         logging.info(f"Looking for JSON files at {landing_file}")
         landing_df = (
-            spark.read.json(landing_file, self.get_field_list())
+            self.spark.read.json(landing_file, self.get_field_list())
             .withColumn("ingestion_date", lit(data_interval_start))
             .withColumn("year_partition", date_format(lit(data_interval_start), "yyyy"))
             .withColumn("month_partition", date_format(lit(data_interval_start), "MM"))
@@ -77,31 +77,39 @@ class TweetIngestion:
         )
         return landing_df
 
+    def merge(self, landing_df):
+        raw_df = DeltaTable.forPath(self.spark, self.raw_path)
+        _ = (
+            raw_df.alias("raw")
+            .merge(
+                source=landing_df.alias("landing"),
+                condition=col("raw.id") == col("landing.id"),
+            )
+            .whenMatchedUpdateAll()
+            .whenNotMatchedInsertAll()
+        )
+
+    def overwrite(self, landing_df):
+        _ = (
+            landing_df.write.format("delta")
+            .partitionBy("year_partition", "month_partition", "day_partition")
+            .save(self.raw_path)
+        )
+
+    def is_delta(self, path):
+        return DeltaTable.isDeltaTable(self.spark, path)
+
     def evaluate(self, **kwargs):
-        spark = self.get_spark()
+        self.spark = self.get_spark()
 
         data_interval_start = kwargs["data_interval_start"]
         landing_file = f"{self.landing_path}/{data_interval_start}"
-        landing_df = self.get_landing(spark, landing_file, data_interval_start)
-        landing_df.printSchema()
-        landing_df.show()
+        landing_df = self.get_landing(landing_file, data_interval_start)
 
-        if DeltaTable.isDeltaTable(spark, self.raw_path):
+        logging.info("Checking if Raw already exists")
+        if self.is_delta(self.raw_path):
             logging.info("Merging landing files with raw")
-            raw_df = DeltaTable.forPath(spark, self.raw_path)
-            _ = (
-                raw_df.alias("raw")
-                .merge(
-                    source=landing_df.alias("landing"),
-                    condition=col("raw.id") == col("landing.id"),
-                )
-                .whenMatchedUpdateAll()
-                .whenNotMatchedInsertAll()
-            )
+            self.merge(landing_df)
         else:
             logging.info("Raw files still not exists, creating a new one")
-            _ = (
-                landing_df.write.format("delta")
-                .partitionBy("year_partition", "month_partition", "day_partition")
-                .save(self.raw_path)
-            )
+            self.overwrite(landing_df)
