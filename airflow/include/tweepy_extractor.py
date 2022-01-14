@@ -59,3 +59,4 @@ class TweepyExtractor:
         os.makedirs(filepath, exist_ok=True)
         with gzip.open(f"{filepath}/{filename}", "wb") as stream:
             stream.write(json_bytes)
+        return f"{filepath}/{filename}"
