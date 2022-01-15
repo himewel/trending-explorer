@@ -8,7 +8,20 @@
 <img alt="DeltaLake" src="https://img.shields.io/badge/delta-%23003366.svg?&style=for-the-badge&logo=delta&logoColor=white"/>
 </p>
 
-This project collect tweets from Twitter with keywords specified in a cofig YAML file, threats it with PySpark and store with Deltalake in three data layers. The first one, stores the data as it is collected, in batches with JSON format and GZIP compression. The second, prepares it in Parquet with Delta format particioned with ingestion date. At the end, the third layer stores the data also in Delta format, but particioned by the tweet creation timestamp.
+This project collect tweets from Twitter with keywords specified in a YAML config file, threats it with PySpark and store with DeltaLake in three data layers. The first one, stores the data as it is collected, in batches with JSON format and GZIP compression. The second, prepares it in Parquet with Delta format partitioned by execution date (from the DAG run). At the end, the third layer stores the data also in Delta format, but partitioned by the tweet creation timestamp. The task orchestration runs at Apache Airflow with PySpark jobs implemented in PythonOperators.
+
+At the config file, the following fields can be specified:
+
+```yaml
+topics:
+    covid19:
+        start-date: 2022-01-10T00:00:00-03
+        schedule-interval: "*/15 * * * *"
+        max-results: 50
+        landing-path: /data/landing
+        raw-path: /data/raw
+        trusted-path: /data/trusted
+```
 
 ## How to start
 
