@@ -28,20 +28,6 @@ class TestTweetIngestion(unittest.TestCase):
         self.assertIsNotNone(field_list)
         self.assertIsInstance(field_list, StructType)
 
-    def test_get_landing(self):
-        landing_df = self.transformer.get_landing(self.tmp_landing_path, "2022-01-10")
-        self.assertTrue(landing_df.count() != 0)
-
-        schema = [field.name for field in landing_df.schema]
-        partition_fields = [
-            "ingestion_date",
-            "year_partition",
-            "month_partition",
-            "day_partition",
-        ]
-        section = list(set(partition_fields).intersection(schema))
-        self.assertFalse(len(section))
-
     def test_is_delta(self):
         is_delta = self.transformer.is_delta(self.tmp_landing_path)
         self.assertFalse(is_delta)
